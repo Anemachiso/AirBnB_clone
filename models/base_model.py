@@ -1,48 +1,49 @@
 #!/usr/bin/python3
-"""Our BaseModel that defines all common attributes/methods for other classes
-"""
+"""Model Base """
 import uuid
-from datetime import datetime
 import models
+from datetime import datetime
 
 
-class BaseModel():
-    """The main class"""
+class BaseModel:
+    """class Base"""
     def __init__(self, *args, **kwargs):
-        """Constructor of the instance. Uses kwargs if not empty"""
+        """ Constructor """
         if kwargs:
+            # self.__dict__ = kwargs
+            # self.created_at = datetime.strptime(self.created_at,
+            #                                     "%Y-%m-%dT%H:%M:%S.%f")
+
+            # self.updated_at = datetime.strptime(self.updated_at,
+            #                                     "%Y-%m-%dT%H:%M:%S.%f")
             for key, value in kwargs.items():
-                if key == "__class__":
-                    continue
-                elif key == "created_at" or key == "updated_at":
-                    time = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-                    setattr(self, key, time)
-                else:
+                if key == "created_at":
+                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+                if key == "updated_at":
+                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+                if key != "__class__":
                     setattr(self, key, value)
         else:
-            self.id = str(uuid.uuid4())
-            self.created_at = datetime.now()
-            self.updated_at = datetime.now()
+            self.id = str(uuid.uuid4())  # unique id
+            self.created_at = datetime.now()  # datetime when is created
+            self.updated_at = datetime.now()  # date when is updated
             models.storage.new(self)
 
     def __str__(self):
-        """Return an user friendly representation
-           of the isinstance
-        """
-        return ("[{}] ({}) {}".format(self.__class__.__name__,
-                                      self.id, self.__dict__))
+        """ print() __str__ method """
+        """" For pep8 validation"""
+        className = self.__class__.__name__
+        return "[{}] ({}) {}".format(className, self.id, self.__dict__)
 
     def save(self):
-        """Updates the public instance attribute
-        updated_at with the current date and time"""
+        """ updates with the current datetime """
         self.updated_at = datetime.now()
         models.storage.save()
 
     def to_dict(self):
-        """Returns a dictionary containing
-        all the __dict__ keys / values of the instance"""
-        my_dict = self.__dict__.copy()
-        my_dict.update({"__class__": self.__class__.__name__})
-        my_dict.update({"created_at": self.created_at.isoformat()})
-        my_dict.update({"updated_at": self.updated_at.isoformat()})
-        return (my_dict)
+        '''returns a dictionary with all keys/value of the instance'''
+        dict_copy = self.__dict__.copy()
+        dict_copy["created_at"] = self.created_at.isoformat()
+        dict_copy["updated_at"] = self.updated_at.isoformat()
+        dict_copy['__class__'] = self.__class__.__name__
+        return dict_copy
