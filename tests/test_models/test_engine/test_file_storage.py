@@ -1,152 +1,150 @@
 #!/usr/bin/python3
-"""File Storage test"""
-import unittest
-import json
-import pep8
-import models
+"""A unit test module for the file storage.
+"""
 import os
-import sys
+import unittest
 
-from models.engine.file_storage import FileStorage
-from models.base_model import BaseModel
+from models import storage
 from models.amenity import Amenity
+from models.base_model import BaseModel
 from models.city import City
+from models.engine.file_storage import FileStorage
 from models.place import Place
 from models.review import Review
 from models.state import State
 from models.user import User
-
-from models.engine.file_storage import FileStorage
+from tests import write_text_file, reset_store
 
 
 class TestFileStorage(unittest.TestCase):
-    """Test cases for FileStorage"""
-
-    def test_doc_module(self):
-        """Module documentation"""
-        doc = FileStorage.__doc__
-        self.assertGreater(len(doc), 1)
-
-    def test_pep8_conformance_file_storage(self):
-        """Test that models/engine/file_storage.py conforms to PEP8."""
-        pep8style = pep8.StyleGuide(quiet=True)
-        result = pep8style.check_files(['models/engine/file_storage.py'])
-        self.assertEqual(result.total_errors, 0,
-                         "Found code style errors (and warnings).")
-
-    def test_pep8_conformance_test_file_storage(self):
-        """Test that tests/test_models/test_engine/test_file_storage.py
-        conforms to PEP8."""
-        pep8style = pep8.StyleGuide(quiet=True)
-        val = 'tests/test_models/test_engine/test_file_storage.py'
-        res = pep8style.check_files([val])
-        self.assertEqual(res.total_errors, 0,
-                         "Found code style errors (and warnings).")
-
-    def test_doc_constructor(self):
-        """Constructor documentation"""
-        doc = FileStorage.__init__.__doc__
-        self.assertGreater(len(doc), 1)
+    """Represents the test class for the FileStorage class.
+    """
 
     def test_init(self):
-        """Test constructor"""
-        f = FileStorage()
-        obj, path = f._FileStorage__objects, f._FileStorage__file_path
-
-        self.assertIsInstance(obj, dict)
-        self.assertIsInstance(path, str)
-
-    def test_functions(self):
-        """Checks if the functions are defined"""
-        f = FileStorage()
-
-        self.assertTrue(hasattr(f, 'all'))
-        self.assertTrue(hasattr(f, 'new'))
-        self.assertTrue(hasattr(f, 'reload'))
-        self.assertTrue(hasattr(f, 'save'))
-
-    def test_all_first(self):
-        """Test method all"""
-        f = FileStorage()
-
-        self.assertIsInstance(f.all(), dict)
-
-    def setUp(self):
-        """Sets up the class test"""
-
-        self.b1 = BaseModel()
-        self.a1 = Amenity()
-        self.c1 = City()
-        self.p1 = Place()
-        self.r1 = Review()
-        self.s1 = State()
-        self.u1 = User()
-        self.storage = FileStorage()
-        self.storage.save()
-        if os.path.exists("file.json"):
-            pass
-        else:
-            os.mknod("file.json")
-
-    def tearDown(self):
-        """Tears down the testing environment"""
-
-        del self.b1
-        del self.a1
-        del self.c1
-        del self.p1
-        del self.r1
-        del self.s1
-        del self.u1
-        del self.storage
-        if os.path.exists("file.json"):
-            os.remove("file.json")
+        """Tests the initialization of the FileStorage class.
+        """
+        self.assertFalse(hasattr(FileStorage, '__file_path'))
+        self.assertFalse(hasattr(FileStorage, '__objects'))
 
     def test_all(self):
-        """Check the all"""
-        obj = self.storage.all()
-        self.assertIsNotNone(obj)
-        self.assertEqual(type(obj), dict)
-        self.assertIs(obj, self.storage._FileStorage__objects)
-
-    def test_storage_empty(self):
-        """check the storage is not empty"""
-
-        self.assertIsNotNone(self.storage.all())
-
-    def test_storage_all_type(self):
-        """check the type of storage"""
-
-        self.assertEqual(dict, type(self.storage.all()))
-
-    def test_check_json_loading(self):
-        """ Checks if methods from Storage Engine works."""
-
-        with open("file.json") as f:
-            dic = json.load(f)
-
-            self.assertEqual(isinstance(dic, dict), True)
-
-    def test_file_existence(self):
+        """Tests the all function of the FileStorage class.
         """
-        Checks if methods from Storage Engine works.
+        write_text_file('file.json', '{}')
+        store = FileStorage()
+        store.reload()
+        self.assertEqual(len(store.all()), 0)
+        mdl = BaseModel()
+        store.new(mdl)
+        self.assertEqual(len(store.all()), 1)
+        mdl = User()
+        store.new(mdl)
+        mdl = City()
+        store.new(mdl)
+        mdl = State()
+        store.new(mdl)
+        mdl = Amenity()
+        store.new(mdl)
+        mdl = Place()
+        store.new(mdl)
+        mdl = Review()
+        store.new(mdl)
+        self.assertEqual(len(store.all()), 7)
+        with self.assertRaises(TypeError):
+            store.all(mdl, None)
+        with self.assertRaises(TypeError):
+            store.all(mdl, mdl)
+        with self.assertRaises(TypeError):
+            store.all(None)
+        with self.assertRaises(TypeError):
+            store.all(store)
+
+    def test_new(self):
+        """Tests the new function of the FileStorage class.
         """
+        store = FileStorage()
+        reset_store(store)
+        mdl = User(**{'id': '5'})
+        store.new(mdl)
+        self.assertEqual(len(store.all()), 1)
+        store.new(mdl)
+        store.new(mdl)
+        store.new(mdl)
+        self.assertEqual(len(store.all()), 1)
+        with self.assertRaises(TypeError):
+            store.new(mdl, None)
+        with self.assertRaises(TypeError):
+            store.new(mdl, mdl)
+        with self.assertRaises(AttributeError):
+            store.new(None)
 
-        with open("file.json") as f:
-            self.assertTrue(len(f.read()) > 0)
+    def test_save(self):
+        """Tests the save function of the FileStorage class.
+        """
+        store = FileStorage()
+        mdl = User(**{'id': '5'})
+        store.new(mdl)
+        if os.path.isfile('file.json'):
+            os.unlink('file.json')
+        self.assertFalse(os.path.isfile('file.json'))
+        store.save()
+        self.assertTrue(os.path.isfile('file.json'))
+        self.assertGreater(os.stat('file.json').st_size, 10)
+        with self.assertRaises(TypeError):
+            store.save(mdl)
+        with self.assertRaises(TypeError):
+            store.save(mdl, None)
+        with self.assertRaises(TypeError):
+            store.save(mdl, mdl)
+        with self.assertRaises(TypeError):
+            store.save(None)
 
-    def test_docstrings(self):
-        """Check the docString each function"""
+    def test_reload(self):
+        """Tests the reload function of the FileStorage class.
+        """
+        reset_store(storage)
+        store = FileStorage()
+        reset_store(store)
+        self.assertEqual(len(store.all()), 0)
+        if os.path.isfile('file.json'):
+            os.unlink('file.json')
+        self.assertFalse(os.path.isfile('file.json'))
+        store.reload()
+        self.assertFalse(os.path.isfile('file.json'))
+        mdl = User(id='5')
+        mdl1 = City(id='7', name='Oklahoma')
+        self.assertEqual(len(store.all()), 0)
+        store.new(mdl)
+        store.new(mdl1)
+        if os.path.isfile('file.json'):
+            os.unlink('file.json')
+        store.save()
+        self.assertEqual(len(store.all()), 2)
+        new_store = FileStorage()
+        with open('file.json', mode='w') as file:
+            file.write('{}')
+        self.assertTrue(new_store.all() is not None)
+        reset_store(new_store)
+        new_store.reload()
+        self.assertEqual(len(new_store.all()), 0)
+        store.save()
+        new_store.reload()
+        self.assertEqual(len(new_store.all()), 2)
+        with open('file.json', mode='w') as file:
+            file.write('{}')
+        new_store.reload()
+        self.assertEqual(len(new_store.all()), 0)
+        with self.assertRaises(TypeError):
+            store.reload(mdl)
+        with self.assertRaises(TypeError):
+            store.reload(mdl, None)
+        with self.assertRaises(TypeError):
+            store.reload(mdl, mdl)
+        with self.assertRaises(TypeError):
+            store.reload(None)
 
-        self.assertTrue(FileStorage.all.__doc__)
-        self.assertTrue(hasattr(FileStorage, 'all'))
-        self.assertTrue(FileStorage.new.__doc__)
-        self.assertTrue(hasattr(FileStorage, 'new'))
-        self.assertTrue(FileStorage.save.__doc__)
-        self.assertTrue(hasattr(FileStorage, 'save'))
-        self.assertTrue(FileStorage.reload.__doc__)
-        self.assertTrue(hasattr(FileStorage, 'reload'))
-
-
-if __name__ == '__main__':
-    unittest.main()
+    def tearDown(self):
+        """Deconstructs this test class.
+        """
+        super().tearDown()
+        if os.path.isfile('file.json'):
+            os.unlink('file.json')

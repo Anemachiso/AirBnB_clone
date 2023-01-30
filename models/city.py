@@ -1,9 +1,11 @@
 #!/usr/bin/python3
-"""City class that inherits from BaseModel"""
+"""A module containing the model for city data sets.
+"""
 from models.base_model import BaseModel
 
 
 class City(BaseModel):
-    """Our beautiful City class"""
-    state_id = ""
-    name = ""
+    """Represents a city data set.
+    """
+    state_id = ''
+    name = ''

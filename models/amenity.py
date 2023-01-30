@@ -1,8 +1,10 @@
 #!/usr/bin/python3
-"""Amenity class that inherits from BaseModel"""
+"""A module containing the model for amenity data sets.
+"""
 from models.base_model import BaseModel
 
 
 class Amenity(BaseModel):
-    """Our beautiful Amenity class"""
-    name = ""
+    """Represents an amenity data set.
+    """
+    name = ''

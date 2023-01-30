@@ -1,10 +1,12 @@
 #!/usr/bin/python3
-"""Review class that inherits from BaseModel"""
+"""A module containing the model for review data sets.
+"""
 from models.base_model import BaseModel
 
 
 class Review(BaseModel):
-    """Our beautiful Review class"""
-    place_id = ""
-    user_id = ""
-    text = ""
+    """Represents a review data set.
+    """
+    place_id = ''
+    user_id = ''
+    text = ''

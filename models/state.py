@@ -1,8 +1,10 @@
 #!/usr/bin/python3
-"""State class that inherits from BaseModel"""
+"""A module containing the model for state data sets.
+"""
 from models.base_model import BaseModel
 
 
 class State(BaseModel):
-    """Our beautiful State class"""
-    name = ""
+    """Represents a state data set.
+    """
+    name = ''
